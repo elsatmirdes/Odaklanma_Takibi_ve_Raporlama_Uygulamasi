@@ -7,21 +7,33 @@ import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import {black} from "nativewind/dist/metro/picocolors";
 import CategoryPicker from '../../../components/CategoryPicker';
 
+
 export function Home() {
     // dakika ayarı (1–25 arası)
     const [minutes, setMinutes] = useState(5);
     const [isPlaying, setIsPlaying] = useState(false);
     const [key, setKey] = useState(0); // reset için
 
-    const [running, setRunning] = useState(false);
+    const [selectEnabled, setSelectEnabled] = useState(true);
+
+    const [dikkat_daginikligi , setDikkatDaginikligi] = useState(0);
+
 
     const [category, setCategory] = useState('Kodlama');
-    const [startedAt, setStartedAt] = useState(null);
+
 
     const appState = useRef(AppState.currentState);
     const [appStateVisible, setAppStateVisible] = useState(appState.current);
 
 
+    // listener içerisindeki kullanılan değişken ilk haliyle kabul edildiği için
+    // render içerisindeki değişimini yakalamak için useRef kullanıyoruz
+    const isPlayingRef = useRef(isPlaying);
+
+    // her render’da ref’i güncel tut
+    useEffect(() => {
+        isPlayingRef.current = isPlaying;
+    }, [isPlaying]);
 
     useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
@@ -29,6 +41,17 @@ export function Home() {
                 appState.current.match(/inactive|background/) &&
                 nextAppState === 'active'
             ) {
+                // ana sayfadan çıkarsa dikkat dağınıklığı bir arttırılıyor
+                if (isPlayingRef.current){
+                    setDikkatDaginikligi(prev => prev + 1);
+                }
+
+                // sayaç otomatik duraklatılmalı
+                setIsPlaying(false);
+
+
+
+                console.log('toplam dikkat daginikligi: ', dikkat_daginikligi);
                 console.log('App has come to the foreground!');
             }
 
@@ -57,6 +80,13 @@ export function Home() {
         setKey((prev) => prev + 1); // yeniden render
     };
 
+    const finishTimer = () => {
+        setIsPlaying(false);
+        console.log('finished timer');
+
+
+    }
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Odaklanma Zamanlayıcısı</Text>
@@ -75,6 +105,9 @@ export function Home() {
             </View>
 
             <CategoryPicker
+                value={category}
+                onChange={setCategory}
+                disabled={!selectEnabled}
             />
 
             <CountdownCircleTimer
@@ -83,7 +116,7 @@ export function Home() {
                 duration={totalSeconds}
                 colors={["#004777", "#F7B801", "#A30000", "#A30000"] as const}
                 colorsTime={[totalSeconds, totalSeconds * 0.6, totalSeconds * 0.3, 0]}
-                onComplete={() => ({ shouldRepeat: false })}
+                onComplete={finishTimer}
                 updateInterval={1}
                 size={200}
                 strokeWidth={12}
@@ -107,6 +140,10 @@ export function Home() {
                     onPress={() => setIsPlaying((prev) => !prev)}
                 />
                 <Button title="Sıfırla" onPress={resetTimer} />
+            </View>
+
+            <View>
+                <Text style={styles.title}>Toplam dikkat dağınıklığı : {dikkat_daginikligi}</Text>
             </View>
         </View>
     );
