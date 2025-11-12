@@ -33,6 +33,8 @@ export function Home() {
     // her render’da ref’i güncel tut
     useEffect(() => {
         isPlayingRef.current = isPlaying;
+        setSelectEnabled(prev => !prev);
+
     }, [isPlaying]);
 
     useEffect(() => {
@@ -48,8 +50,6 @@ export function Home() {
 
                 // sayaç otomatik duraklatılmalı
                 setIsPlaying(false);
-
-
 
                 console.log('toplam dikkat daginikligi: ', dikkat_daginikligi);
                 console.log('App has come to the foreground!');
@@ -107,7 +107,8 @@ export function Home() {
             <CategoryPicker
                 value={category}
                 onChange={setCategory}
-                disabled={!selectEnabled}
+                disabled={selectEnabled}
+
             />
 
             <CountdownCircleTimer
@@ -142,9 +143,14 @@ export function Home() {
                 <Button title="Sıfırla" onPress={resetTimer} />
             </View>
 
-            <View>
-                <Text style={styles.title}>Toplam dikkat dağınıklığı : {dikkat_daginikligi}</Text>
-            </View>
+            {!isPlayingRef.current && (
+                <View>
+                    <Text style={styles.title}>Toplam Süre : {minutes}</Text>
+                    <Text style={styles.title}>Kategori : {category}</Text>
+                    <Text style={styles.title}>Toplam dikkat dağınıklığı : {dikkat_daginikligi}</Text>
+                </View>
+            )}
+
         </View>
     );
 }
