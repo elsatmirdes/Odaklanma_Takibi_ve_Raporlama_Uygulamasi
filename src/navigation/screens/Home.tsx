@@ -84,7 +84,6 @@ export function Home() {
         setIsPlaying(false);
         console.log('finished timer');
 
-
     }
 
     return (

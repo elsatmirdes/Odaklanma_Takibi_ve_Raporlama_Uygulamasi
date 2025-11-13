@@ -24,6 +24,7 @@ export function App() {
   const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme
 
   return (
+
     <Navigation
       theme={theme}
       linking={{
