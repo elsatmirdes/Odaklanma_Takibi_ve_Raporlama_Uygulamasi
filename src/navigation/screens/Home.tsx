@@ -7,8 +7,16 @@ import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import {black} from "nativewind/dist/metro/picocolors";
 import CategoryPicker from '../../../components/CategoryPicker';
 
+import {
+    type FocusSession,
+    addFocusSession, getDashboardStats, getAllSessions
+} from '../../services/database';
+import { useSQLiteContext, SQLiteProvider } from 'expo-sqlite';
 
 export function Home() {
+
+    const db = useSQLiteContext();
+
     // dakika ayarı (1–25 arası)
     const [minutes, setMinutes] = useState(5);
     const [isPlaying, setIsPlaying] = useState(false);
@@ -79,6 +87,14 @@ export function Home() {
         setIsPlaying(false);
         setKey((prev) => prev + 1); // yeniden render
     };
+
+    const addData = async () => {
+        // 1. İstatistikleri çek
+        const dashboardData = await addFocusSession(db,minutes*60,dikkat_daginikligi,category);
+
+
+    };
+
 
     const finishTimer = () => {
         setIsPlaying(false);
