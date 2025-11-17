@@ -10,7 +10,7 @@ export interface FocusSession {
     duration_seconds: number; // Saniye cinsinden odaklanma süresi
     distraction_count: number; // Dikkat dağılma sayısı
     created_at: string; // Kayıt tarihi (ISO formatında)
-    categori: string;
+    category: string;
 }
 
 // Dashboard ekranında göstereceğin istatistik objesi
@@ -44,10 +44,12 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         duration_seconds INTEGER NOT NULL,
         distraction_count INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
-        categori TEXT
+        category TEXT NOT NULL
       );
+      
+      
     `);
-
+        console.log('Veritabanı OLUŞTURULDUU');
         currentDbVersion = 1;
     }
 
@@ -64,21 +66,22 @@ export async function addFocusSession(
     db: SQLiteDatabase,
     durationSeconds: number,
     distractionCount: number,
-    categori: string
+    category: string
 
 ) {
     // Basit bir unique ID oluşturma (UUID kütüphanesi yoksa bu yeterlidir)
     const id = uuid.v4().toString();
 
     const statement = await db.prepareAsync(
-        `INSERT INTO focus_sessions (id, duration_seconds, distraction_count, categori) VALUES ($id, $duration, $distractions, $categori)`
+        `INSERT INTO focus_sessions (id, duration_seconds, distraction_count, category) VALUES ($id, $duration, $distractions, $category)`
     );
 
     try {
         await statement.executeAsync({
             $id: id,
             $duration: durationSeconds,
-            $distractions: distractionCount
+            $distractions: distractionCount,
+            $category: category,
         });
         console.log('✅ Oturum kaydedildi.');
     } catch (e) {

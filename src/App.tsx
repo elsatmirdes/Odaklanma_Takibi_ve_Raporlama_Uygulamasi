@@ -37,7 +37,8 @@ const initializeDB = async (db: SQLiteDatabase) => {
       id INTEGER PRIMARY KEY NOT NULL,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       duration_seconds INTEGER NOT NULL,
-      distraction_count INTEGER NOT NULL DEFAULT 0
+      distraction_count INTEGER NOT NULL DEFAULT 0,
+      category TEXT NOT NULL
     );
   `);
 

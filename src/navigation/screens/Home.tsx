@@ -90,7 +90,7 @@ export function Home() {
 
     const addData = async () => {
         // 1. İstatistikleri çek
-        const dashboardData = await addFocusSession(db,minutes*60,dikkat_daginikligi,category);
+        await addFocusSession(db,minutes*60,dikkat_daginikligi,category);
 
 
     };
@@ -99,6 +99,8 @@ export function Home() {
     const finishTimer = () => {
         setIsPlaying(false);
         console.log('finished timer');
+        addData();
+        console.log('data eklendi');
 
     }
 
