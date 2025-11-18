@@ -37,7 +37,6 @@ export function Home() {
     // listener içerisindeki kullanılan değişken ilk haliyle kabul edildiği için
     // render içerisindeki değişimini yakalamak için useRef kullanıyoruz
     const isPlayingRef = useRef(isPlaying);
-
     // her render’da ref’i güncel tut
     useEffect(() => {
         isPlayingRef.current = isPlaying;

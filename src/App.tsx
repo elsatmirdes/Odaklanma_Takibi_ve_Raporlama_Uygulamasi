@@ -31,10 +31,11 @@ const initializeDB = async (db: SQLiteDatabase) => {
     // WAL modunu etkinleştirmek performansı artırır (önerilir)
     await db.execAsync('PRAGMA journal_mode = WAL;');
 
+
     // ReportsScreen'deki veriye göre tablo şemasını oluştur
     await db.execAsync(`
     CREATE TABLE IF NOT EXISTS focus_sessions (
-      id INTEGER PRIMARY KEY NOT NULL,
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
       duration_seconds INTEGER NOT NULL,
       distraction_count INTEGER NOT NULL DEFAULT 0,
@@ -51,13 +52,12 @@ const initializeDB = async (db: SQLiteDatabase) => {
 export function App() {
     const colorScheme = useColorScheme(); // <-- 3. SİLİNDİ
     const theme = colorScheme === 'dark' ? DarkTheme : DefaultTheme; // <-- 4. SİLİNDİ
-
     return (
         <React.Suspense fallback={<View />}>
 
             {/* 2. 'initializeDB' fonksiyonunu 'onInit' prop'una ata */}
             <SQLiteProvider
-                databaseName="veritabanim.db"
+                databaseName="focus_sessions.db"
                 onInit={initializeDB} // <-- HATA DÜZELTMESİ
             >
 

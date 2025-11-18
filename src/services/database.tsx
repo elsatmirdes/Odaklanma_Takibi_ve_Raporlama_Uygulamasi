@@ -1,12 +1,12 @@
 import * as SQLite from 'expo-sqlite';
 import { type SQLiteDatabase } from 'expo-sqlite';
-import uuid from 'react-native-uuid';
+
 
 // --- 1. TİP TANIMLAMALARI (TYPES) ---
 
 // Veritabanına kaydedilen her bir oturumun yapısı
 export interface FocusSession {
-    id: string;
+    id: number;
     duration_seconds: number; // Saniye cinsinden odaklanma süresi
     distraction_count: number; // Dikkat dağılma sayısı
     created_at: string; // Kayıt tarihi (ISO formatında)
@@ -40,7 +40,7 @@ export async function migrateDbIfNeeded(db: SQLiteDatabase) {
         await db.execAsync(`
       PRAGMA journal_mode = 'wal';
       CREATE TABLE IF NOT EXISTS focus_sessions (
-        id TEXT PRIMARY KEY,
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
         duration_seconds INTEGER NOT NULL,
         distraction_count INTEGER NOT NULL DEFAULT 0,
         created_at TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
@@ -70,20 +70,20 @@ export async function addFocusSession(
 
 ) {
     // Basit bir unique ID oluşturma (UUID kütüphanesi yoksa bu yeterlidir)
-    const id = uuid.v4().toString();
 
+    console.log('✅ Oturum kaydedildi1.');
     const statement = await db.prepareAsync(
-        `INSERT INTO focus_sessions (id, duration_seconds, distraction_count, category) VALUES ($id, $duration, $distractions, $category)`
+        `INSERT INTO focus_sessions (duration_seconds, distraction_count, category) VALUES ($durationSeconds, $distractionCount, $category)`
     );
-
+    console.log('✅ Oturum kaydedildi2.');
+    console.log(durationSeconds,  distractionCount,  category );
     try {
         await statement.executeAsync({
-            $id: id,
-            $duration: durationSeconds,
-            $distractions: distractionCount,
+            $durationSeconds: durationSeconds,
+            $distractionCount: distractionCount,
             $category: category,
         });
-        console.log('✅ Oturum kaydedildi.');
+        console.log('✅ Oturum kaydedildi3.');
     } catch (e) {
         console.error('Kayıt hatası:', e);
     } finally {
@@ -144,7 +144,7 @@ export async function deleteSession(db: SQLiteDatabase, id: string) {
  */
 export async function updateSession(
     db: SQLiteDatabase,
-    id: string,
+    id: number,
     data: Partial<Pick<FocusSession, 'duration_seconds' | 'distraction_count'>>
 ) {
     // Sadece değişen alanları güncellemek için dinamik sorgu
