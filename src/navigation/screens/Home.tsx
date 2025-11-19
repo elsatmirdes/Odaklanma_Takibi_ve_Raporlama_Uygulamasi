@@ -85,6 +85,7 @@ export function Home() {
     const resetTimer = () => {
         setIsPlaying(false);
         setKey((prev) => prev + 1); // yeniden render
+
     };
 
     const addData = async () => {
@@ -100,6 +101,7 @@ export function Home() {
         console.log('finished timer');
         addData();
         console.log('data eklendi');
+        setKey((prev) => prev + 1); // yeniden render
 
     }
 
