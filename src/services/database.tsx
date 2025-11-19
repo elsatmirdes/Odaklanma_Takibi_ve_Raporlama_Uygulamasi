@@ -127,9 +127,15 @@ export async function getDashboardStats(db: SQLiteDatabase): Promise<DashboardSt
  */
 export async function getAllSessions(db: SQLiteDatabase): Promise<FocusSession[]> {
     return await db.getAllAsync<FocusSession>(
-        'SELECT * FROM focus_sessions ORDER BY created_at DESC'
+        'SELECT * FROM focus_sessions ORDER BY STRFTIME(\'%Y-%m-%d\', created_at) DESC'
     );
 }
+export async function getLatestSession(db: SQLiteDatabase): Promise<FocusSession[]> {
+    return await db.getAllAsync<FocusSession>(
+        'SELECT STRFTIME(\'%Y-%m-%d\', created_at) AS created_at, SUM(duration_seconds) AS duration_seconds FROM  focus_sessions WHERE created_at >= STRFTIME(\'%Y-%m-%d %H:%M:%S\', DATE(\'now\', \'-6 day\')) GROUP BY created_at ORDER BY created_at DESC'
+    );
+}
+
 
 /**
  * DELETE: Hatalı girilmiş bir kaydı silmek için.

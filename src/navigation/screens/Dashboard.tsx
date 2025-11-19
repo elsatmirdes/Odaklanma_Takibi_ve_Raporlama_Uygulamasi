@@ -7,8 +7,21 @@ import {
     getAllSessions,
     formatTime,
     type DashboardStats,
-    type FocusSession
+    type FocusSession, getLatestSession
 } from '../../services/database';
+import {FunctionComponent} from "react";
+
+import {OdaklanmaSonHaftaBarChart,DataSet,BarChartData,OdaklanmaSuresiChartProps} from "../../../components/OdaklanmaSureGrafigi";
+import {BarChart} from "react-native-chart-kit";
+import {SafeAreaConsumer,SafeAreaView} from "react-native-safe-area-context";
+
+
+// Veritabanına kaydedilen her bir oturumun yapısı
+export interface chartData {
+    record_date: string; // Kayıt tarihi (ISO formatında)
+    total_duration: number; // Saniye cinsinden odaklanma süresi
+
+}
 
 export function ReportsScreen() {
     const db = useSQLiteContext();
@@ -18,8 +31,62 @@ export function ReportsScreen() {
         totalFocusTime: 0,
         totalDistractions: 0
     });
+// 1. BarChartData için boş bir başlangıç yapısı
+    const initialBarChartData: BarChartData = {
+        labels: [],
+        datasets: [{ data: [] }],
+    };
+
+// 2. OdaklanmaSuresiChartProps için başlangıç yapısı
+    const initialChartProps: OdaklanmaSuresiChartProps = {
+        data_: initialBarChartData,
+    };
 
     const [history, setHistory] = useState<FocusSession[]>([]);
+    const [dataLatestSeven, setDataLatestSeven] = useState<OdaklanmaSuresiChartProps>(initialChartProps);
+
+    const finalize7DaySummary = (sqlResults : Array<FocusSession>) => {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const summaryMap = new Map();
+
+        // SQL sonuçlarını, hızlı arama için bir Harita'ya (Map) dönüştür
+        const focusMap = new Map();
+        sqlResults.forEach(row => {
+            // row.record_date ve row.total_duration SQL'den gelir
+            if (focusMap.has(row.created_at)) {
+                // 2. Eğer o gün için zaten bir toplam varsa, yeni süreyi üzerine ekle
+                const currentTotal = focusMap.get(row.created_at)!;
+                focusMap.set(row.created_at, currentTotal + row.duration_seconds);
+            } else {
+                // 3. Eğer o gün için ilk kayıt ise, süreyi başlangıç değeri olarak ayarla
+                focusMap.set(row.created_at, row.duration_seconds);
+            }
+        });
+        // Son 7 günün tarihlerini belirle ve haritayı tamamla
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() - i);
+
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const formattedDate = `${year}-${month}-${day}`;
+
+            // SQL sonucunda o gün varsa süreyi al, yoksa 0 ata
+            const duration = focusMap.has(formattedDate)
+                ? focusMap.get(formattedDate)
+                : 0;
+
+            summaryMap.set(formattedDate, duration);
+        }
+
+        // Sonucu tarihe göre sıralı bir diziye dönüştür
+        return Array.from(summaryMap.entries()).sort(([dateA], [dateB]) =>
+            dateA.localeCompare(dateB)
+        );
+    }
 
     const loadData = async () => {
         // 1. İstatistikleri çek
@@ -29,6 +96,36 @@ export function ReportsScreen() {
         // 2. Tüm geçmiş listesini çek
         const allData = await getAllSessions(db);
         setHistory(allData);
+
+        const latestData = await getLatestSession(db);
+
+// 3. Son 7 günlük özet veriyi al
+        const finalData = finalize7DaySummary(latestData); // Ör: [["2025-11-13", 0], ["2025-11-14", 120], ...]
+
+        // 4. Etiketleri ve Veriyi Ayırma
+        const labels: string[] = finalData.map(([date, _]) => {
+            // Tarih formatını kısaltabilirsiniz (örneğin sadece MM/DD)
+            const parts = date.split('-');
+            return `${parts[1]}/${parts[2]}`; // Örn: "11/13"
+        });
+
+        const dataNumbers: number[] = finalData.map(([_, duration]) => duration);
+
+        const DataSets : DataSet = {
+            data: dataNumbers
+        }
+        console.log(dataNumbers);
+        // 5. BarChartData yapısını oluşturma
+        const barChartData: BarChartData = {
+            labels: labels,
+            datasets: [DataSets]
+        };
+        const odaklanmaSuresi:OdaklanmaSuresiChartProps = {
+            data_: barChartData
+        }
+        // 6. State'i Güncelleme
+        setDataLatestSeven(odaklanmaSuresi);
+
     };
 
     // Ekran her görüntülendiğinde verileri yenile
@@ -39,7 +136,7 @@ export function ReportsScreen() {
     );
 
     return (
-
+        <SafeAreaView>
         <ScrollView>
             {/* --- İSTATİSTİK KARTLARI --- */}
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10 }}>
@@ -64,6 +161,9 @@ export function ReportsScreen() {
                     </Text>
                 </View>
             </View>
+            <View>
+                <OdaklanmaSonHaftaBarChart data_={dataLatestSeven.data_}/>
+            </View>
 
             {/* --- GEÇMİŞ LİSTESİ --- */}
             <Text style={{ fontSize: 20, marginTop: 20 }}>Geçmiş Oturumlar</Text>
@@ -74,6 +174,10 @@ export function ReportsScreen() {
                     <Text>Dikkat Dağılma: {session.distraction_count}</Text>
                 </View>
             ))}
+
+
+
         </ScrollView>
+        </SafeAreaView>
     );
 }
