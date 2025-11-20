@@ -40,43 +40,24 @@ const chartConfig = {
 };
 
 export function OdaklanmaKategoriPieChart({data}: DataSetKategorik){
-    const data_ = [
-        {
-            name: data[0].category,
-            population: data[1].duration_seconds,
-            color: "rgba(131, 167, 234, 1)",
-            legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-        },
-        {
-            name: "Kodlama",
-            population: data[1],
-            color: "#F00",
-            legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-        },
-        {
-            name: "Proje",
-            population: data[2],
-            color: "red",
-            legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-        },
-        {
-            name: "Kitap Okuma",
-            population: data[3],
-            color: "#ffffff",
-            legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-        },
-        {
-            name: "Diğer",
-            population: data[4],
-            color: "rgb(0, 0, 255)",
-            legendFontColor: "#7F7F7F",
-            legendFontSize: 15
-        }
-    ];
+    // Sabit renk ve font ayarları
+    const FIXED_CHART_PROPS = {
+        color: "rgba(131, 167, 234, 1)", // Sabit Dilim Rengi
+        legendFontColor: "#7F7F7F",      // Sabit Etiket Rengi
+        legendFontSize: 15               // Sabit Etiket Yazı Boyutu
+    };
+
+    // Gelen diziyi map (dönüştür) ederek istenen yapıyı oluştururuz
+    const data_ = data.map((item) => {
+        return {
+            // Dinamik veriler
+            name: item.category,              // Kategori Adı
+            population: item.duration_seconds,  // Toplam Süre (Büyüklük)
+            // Sabit veriler
+            ...FIXED_CHART_PROPS,
+        };
+    });
+
     return(
         <View>
             <Text style={styles.chartTitle}> Odaklanma Grafiği Son 7 Gün </Text>

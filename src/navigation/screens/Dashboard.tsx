@@ -46,7 +46,7 @@ export function ReportsScreen() {
 
     const [history, setHistory] = useState<FocusSession[]>([]);
     const [dataLatestSeven, setDataLatestSeven] = useState<OdaklanmaSuresiChartProps>(initialChartProps);
-    const [kategorikDaata, setKategorikDaata] = useState<Array<number>>();
+    const [kategorikDaata, setKategorikDaata] = useState<DataSetKategorik>();
 
     const finalize7DaySummary = (sqlResults : Array<FocusSession>) => {
         const today = new Date();
@@ -134,7 +134,7 @@ export function ReportsScreen() {
 
         // 6. State'i Güncelleme
         setDataLatestSeven(odaklanmaSuresi);
-
+        setKategorikDaata(kategorikData);
 
 
     };
