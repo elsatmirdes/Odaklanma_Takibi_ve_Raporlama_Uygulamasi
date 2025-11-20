@@ -136,6 +136,12 @@ export async function getLatestSession(db: SQLiteDatabase): Promise<FocusSession
     );
 }
 
+export async function getCategoryData(db: SQLiteDatabase): Promise<FocusSession[]> {
+    return await db.getAllAsync<FocusSession>(
+        'SELECT category AS category, SUM(duration_seconds) AS duration_seconds FROM  focus_sessions GROUP BY category ORDER BY duration_seconds DESC'
+    );
+}
+
 
 /**
  * DELETE: Hatalı girilmiş bir kaydı silmek için.

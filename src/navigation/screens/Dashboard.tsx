@@ -6,12 +6,14 @@ import {
     getDashboardStats,
     getAllSessions,
     formatTime,
+    getCategoryData,
     type DashboardStats,
     type FocusSession, getLatestSession
 } from '../../services/database';
 import {FunctionComponent} from "react";
 
 import {OdaklanmaSonHaftaBarChart,DataSet,BarChartData,OdaklanmaSuresiChartProps} from "../../../components/OdaklanmaSureGrafigi";
+import {OdaklanmaKategoriPieChart, DataSetKategorik} from "../../../components/OdaklanmaKategoriGrafigi"
 import {BarChart} from "react-native-chart-kit";
 import {SafeAreaConsumer,SafeAreaView} from "react-native-safe-area-context";
 
@@ -44,6 +46,7 @@ export function ReportsScreen() {
 
     const [history, setHistory] = useState<FocusSession[]>([]);
     const [dataLatestSeven, setDataLatestSeven] = useState<OdaklanmaSuresiChartProps>(initialChartProps);
+    const [kategorikDaata, setKategorikDaata] = useState<Array<number>>();
 
     const finalize7DaySummary = (sqlResults : Array<FocusSession>) => {
         const today = new Date();
@@ -114,6 +117,7 @@ export function ReportsScreen() {
         const DataSets : DataSet = {
             data: dataNumbers
         }
+
         console.log(dataNumbers);
         // 5. BarChartData yapısını oluşturma
         const barChartData: BarChartData = {
@@ -123,8 +127,15 @@ export function ReportsScreen() {
         const odaklanmaSuresi:OdaklanmaSuresiChartProps = {
             data_: barChartData
         }
+
+        /** katgorik grafik işlemleri bu kısımda */
+        const kategorikData = await getCategoryData(db);
+        console.log("Kategorik data: ",kategorikData);
+
         // 6. State'i Güncelleme
         setDataLatestSeven(odaklanmaSuresi);
+
+
 
     };
 
@@ -161,9 +172,12 @@ export function ReportsScreen() {
                     </Text>
                 </View>
             </View>
+
             <View>
                 <OdaklanmaSonHaftaBarChart data_={dataLatestSeven.data_}/>
             </View>
+
+
 
             {/* --- GEÇMİŞ LİSTESİ --- */}
             <Text style={{ fontSize: 20, marginTop: 20 }}>Geçmiş Oturumlar</Text>
