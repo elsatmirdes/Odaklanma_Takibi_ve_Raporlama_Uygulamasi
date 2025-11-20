@@ -91,8 +91,6 @@ export function Home() {
     const addData = async () => {
         // 1. İstatistikleri çek
         await addFocusSession(db,minutes*60,dikkat_daginikligi,category);
-
-
     };
 
 
@@ -101,6 +99,7 @@ export function Home() {
         console.log('finished timer');
         addData();
         console.log('data eklendi');
+        setDikkatDaginikligi(0);
         setKey((prev) => prev + 1); // yeniden render
 
     }

@@ -13,7 +13,7 @@ import {
 import {FunctionComponent} from "react";
 
 import {OdaklanmaSonHaftaBarChart,DataSet,BarChartData,OdaklanmaSuresiChartProps} from "../../../components/OdaklanmaSureGrafigi";
-import {OdaklanmaKategoriPieChart, DataSetKategorik} from "../../../components/OdaklanmaKategoriGrafigi"
+import {OdaklanmaKategoriPieChart, DataSetKategorik,pieChartData} from "../../../components/OdaklanmaKategoriGrafigi"
 import {BarChart} from "react-native-chart-kit";
 import {SafeAreaConsumer,SafeAreaView} from "react-native-safe-area-context";
 
@@ -44,9 +44,16 @@ export function ReportsScreen() {
         data_: initialBarChartData,
     };
 
+    const initialPieChartData: Array<pieChartData> = [];
+// 2. DataSetKategorik için başlangıç yapısı
+    const initialPieChartProps: DataSetKategorik = {
+        data: initialPieChartData,
+    };
+
+
     const [history, setHistory] = useState<FocusSession[]>([]);
     const [dataLatestSeven, setDataLatestSeven] = useState<OdaklanmaSuresiChartProps>(initialChartProps);
-    const [kategorikDaata, setKategorikDaata] = useState<DataSetKategorik>();
+    const [kategorikDaata_, setKategorikDaata] = useState<DataSetKategorik>(initialPieChartProps);
 
     const finalize7DaySummary = (sqlResults : Array<FocusSession>) => {
         const today = new Date();
@@ -128,13 +135,28 @@ export function ReportsScreen() {
             data_: barChartData
         }
 
+        // Pie Chart formatına dönüştürülmüş dilimleri tutacak dizi
+        const transformedSlices: Array<pieChartData> = [];
+
         /** katgorik grafik işlemleri bu kısımda */
         const kategorikData = await getCategoryData(db);
+        kategorikData.forEach((kategorik) => {
+            const sliceData:pieChartData = {
+                category: kategorik.category,
+                duration_seconds: kategorik.duration_seconds,
+            }
+
+            transformedSlices.push(sliceData);
+        })
+// 3. DataSetKategorik yapısını oluşturma
+        const dataSet: DataSetKategorik = {
+            data: transformedSlices // Dönüştürülmüş dizi buraya yerleştirilir
+        };
         console.log("Kategorik data: ",kategorikData);
 
         // 6. State'i Güncelleme
         setDataLatestSeven(odaklanmaSuresi);
-        setKategorikDaata(kategorikData);
+        setKategorikDaata(dataSet);
 
 
     };
@@ -176,7 +198,9 @@ export function ReportsScreen() {
             <View>
                 <OdaklanmaSonHaftaBarChart data_={dataLatestSeven.data_}/>
             </View>
-
+            <View style={{ padding: 20}}>
+                <OdaklanmaKategoriPieChart data={kategorikDaata_.data}/>
+            </View>
 
 
             {/* --- GEÇMİŞ LİSTESİ --- */}

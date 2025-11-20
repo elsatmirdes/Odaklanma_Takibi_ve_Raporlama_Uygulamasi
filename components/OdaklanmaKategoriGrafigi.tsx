@@ -4,6 +4,7 @@ import {
 import {Dimensions, StyleSheet, View, Text,ViewStyle,TextStyle } from "react-native";
 import {FunctionComponent} from "react";
 import {white} from "nativewind/dist/metro/picocolors";
+import { useEffect, useState, useCallback } from 'react';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -39,22 +40,29 @@ const chartConfig = {
     },
 };
 
-export function OdaklanmaKategoriPieChart({data}: DataSetKategorik){
+export function OdaklanmaKategoriPieChart(props: DataSetKategorik){
+
+    const chartData = props.data;
     // Sabit renk ve font ayarları
-    const FIXED_CHART_PROPS = {
-        color: "rgba(131, 167, 234, 1)", // Sabit Dilim Rengi
-        legendFontColor: "#7F7F7F",      // Sabit Etiket Rengi
-        legendFontSize: 15               // Sabit Etiket Yazı Boyutu
+
+    // her render’da yeni rastgele renkler üretmek için fonksiyon
+    const getRandomColor = () => {
+        const r = Math.floor(Math.random() * 256);
+        const g = Math.floor(Math.random() * 256);
+        const b = Math.floor(Math.random() * 256);
+        return `rgba(${r}, ${g}, ${b}, 1)`; // tam opak renk
     };
 
     // Gelen diziyi map (dönüştür) ederek istenen yapıyı oluştururuz
-    const data_ = data.map((item) => {
+    const data_ = chartData.map((item) => {
         return {
             // Dinamik veriler
             name: item.category,              // Kategori Adı
             population: item.duration_seconds,  // Toplam Süre (Büyüklük)
             // Sabit veriler
-            ...FIXED_CHART_PROPS,
+            color: getRandomColor(), // Sabit Dilim Rengi
+            legendFontColor: "#7F7F7F",      // Sabit Etiket Rengi
+            legendFontSize: 15
         };
     });
 
@@ -64,12 +72,12 @@ export function OdaklanmaKategoriPieChart({data}: DataSetKategorik){
             <PieChart
                 data={data_}
                 width={screenWidth}
-                height={220}
+                height={200}
                 chartConfig={chartConfig}
                 accessor={"population"}
                 backgroundColor={"transparent"}
-                paddingLeft={"15"}
-                center={[10, 50]}
+                paddingLeft={"-15"}
+                center={[5, 5]}
                 absolute
             />
         </View>
