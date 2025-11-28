@@ -68,7 +68,7 @@ export function OdaklanmaKategoriPieChart(props: DataSetKategorik){
 
     return(
         <View>
-            <Text style={styles.chartTitle}> Odaklanma Grafiği Son 7 Gün </Text>
+            <Text style={styles.chartTitle}> Odaklanma Kategorik Grafiği </Text>
             <PieChart
                 data={data_}
                 width={screenWidth}
@@ -78,7 +78,8 @@ export function OdaklanmaKategoriPieChart(props: DataSetKategorik){
                 backgroundColor={"transparent"}
                 paddingLeft={"-15"}
                 center={[5, 5]}
-                absolute
+                absolute={false}
+                hasLegend
             />
         </View>
     );

@@ -203,17 +203,6 @@ export function ReportsScreen() {
             </View>
 
 
-            {/* --- GEÇMİŞ LİSTESİ --- */}
-            <Text style={{ fontSize: 20, marginTop: 20 }}>Geçmiş Oturumlar</Text>
-            {history.map((session) => (
-                <View key={session.id} style={{ padding: 15, borderBottomWidth: 1, borderColor: '#ccc' }}>
-                    <Text>Tarih: {session.created_at}</Text>
-                    <Text>Süre: {formatTime(session.duration_seconds)}</Text>
-                    <Text>Dikkat Dağılma: {session.distraction_count}</Text>
-                </View>
-            ))}
-
-
 
         </ScrollView>
         </SafeAreaView>

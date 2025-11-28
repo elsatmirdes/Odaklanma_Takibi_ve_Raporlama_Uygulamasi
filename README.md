@@ -17,6 +17,10 @@ npx create-expo-app@latest --template react-navigation/template
 npm install @react-navigation/native
 ```
 
+**Geri sayım bileşeni**
+```
+react-native-countdown-circle-timer
+```
 
 **@react-navigation/native, @react-navigation/bottom-tabs**
 ```
