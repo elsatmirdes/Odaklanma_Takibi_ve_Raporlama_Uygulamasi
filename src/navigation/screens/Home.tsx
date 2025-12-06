@@ -78,7 +78,7 @@ export function Home() {
     };
 
     const decreaseTime = () => {
-        if (minutes > 1 && !isPlaying) setMinutes(minutes - 1);
+        if (minutes > 5 && !isPlaying) setMinutes(minutes - 1);
     };
 
     // yeniden başlat
