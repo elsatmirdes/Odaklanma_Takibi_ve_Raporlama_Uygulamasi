@@ -7,6 +7,10 @@ import { CountdownCircleTimer } from 'react-native-countdown-circle-timer';
 import {black} from "nativewind/dist/metro/picocolors";
 import CategoryPicker from '../../../components/CategoryPicker';
 
+import * as Notifications from 'expo-notifications';
+import { Platform } from 'react-native';
+
+
 import {
     type FocusSession,
     addFocusSession, getDashboardStats, getAllSessions
@@ -14,6 +18,16 @@ import {
 import { useSQLiteContext, SQLiteProvider } from 'expo-sqlite';
 
 export function Home() {
+
+    // Uygulama ön plandayken de banner göstermek için:
+    Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+            shouldPlaySound: true,
+            shouldSetBadge: false,
+            shouldShowBanner: true, //
+            shouldShowList: true,   //
+        }),
+    });
 
     const db = useSQLiteContext();
 
@@ -45,6 +59,24 @@ export function Home() {
     }, [isPlaying]);
 
     useEffect(() => {
+        (async () => {
+            const { status } = await Notifications.requestPermissionsAsync();
+            if (status !== 'granted') {
+                console.warn('Bildirim izni verilmedi.');
+            }
+            if (Platform.OS === 'android') {
+                await Notifications.setNotificationChannelAsync('default', {
+                    name: 'default',
+                    importance: Notifications.AndroidImportance.HIGH,
+                    vibrationPattern: [0, 250, 250, 250],
+                    lightColor: '#FF231F7C',
+                });
+            }
+        })();
+    }, []);
+
+
+    useEffect(() => {
         const subscription = AppState.addEventListener('change', nextAppState => {
             if (
                 appState.current.match(/inactive|background/) &&
@@ -70,6 +102,31 @@ export function Home() {
     }, []);
 
 
+    const finishTimer2 = async () => {
+        setIsPlaying(false);
+        console.log('finished timer');
+
+        await addData(); // veri kaydı
+        console.log('data eklendi');
+
+        // HEMEN bildir (trigger:null)
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: 'Süre bitti ⏰',
+                body: 'Veri kaydedildi.',
+                sound: 'default',
+                // Android için default kanal
+                // (kanalı useEffect’te oluşturduk)
+                // @ts-ignore (type tanımına takılırsan)
+                channelId: 'default',
+            },
+            trigger: null, // anında göster
+        });
+
+        setKey((prev) => prev + 1);
+        setDikkatDaginikligi(0);
+    };
+
     const totalSeconds = minutes * 60;
 
     // dakika artır/azalt fonksiyonları
@@ -78,7 +135,7 @@ export function Home() {
     };
 
     const decreaseTime = () => {
-        if (minutes > 5 && !isPlaying) setMinutes(minutes - 1);
+        if (minutes > 1 && !isPlaying) setMinutes(minutes - 1);
     };
 
     // yeniden başlat
@@ -98,9 +155,10 @@ export function Home() {
         setIsPlaying(false);
         console.log('finished timer');
         addData();
+        finishTimer2();
         console.log('data eklendi');
-        setDikkatDaginikligi(0);
         setKey((prev) => prev + 1); // yeniden render
+        setDikkatDaginikligi(0);
 
     }
 

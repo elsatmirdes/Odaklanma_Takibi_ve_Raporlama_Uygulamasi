@@ -71,7 +71,7 @@ export async function addFocusSession(
 ) {
     // Basit bir unique ID oluşturma (UUID kütüphanesi yoksa bu yeterlidir)
 
-    console.log('✅ Oturum kaydedildi1.');
+    console.log('Oturum kaydedildi1.');
     const statement = await db.prepareAsync(
         `INSERT INTO focus_sessions (duration_seconds, distraction_count, category) VALUES ($durationSeconds, $distractionCount, $category)`
     );
